@@ -463,6 +463,7 @@ public class SettingView extends JFrame {
 		        }   
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			System.out.println("±£´æÅäÖÃÎÄ¼şÊ§°Ü");
 			e.printStackTrace();
 		}	
 	}

@@ -7,5 +7,5 @@ public final class Constant {
     public static final String dataBaseUserName = "root";
     public static final String dataBasePassWord = "root";
     
-    public static final String applicationPath = "D:\\StackOverFlowSpider\\";
+    public static final String applicationPath = "C:\\StackOverFlowSpider\\";
 }
