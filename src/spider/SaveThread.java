@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -26,45 +29,86 @@ public class SaveThread extends ThreadInfo {
      * @param hashCode hash值
      * @param path 路径
      * @param threadType 线程类型
+	 * @param contentType 内容类型
      * @param context 上下文
      */
-	public SaveThread(long hashCode,String path,int threadType,Context context){
-		super(hashCode, formatPath(path), threadType, context);
-		printThreadInfo(path);
-		printThreadInfo(formatPath(path));
+	public SaveThread(long hashCode,String path,int threadType,int contentType,Context context){
+		super(hashCode, path, threadType,contentType, context);
 	}
-	
 
-	public static String formatPath(String path){
-		// \/:*?"<>|
+
+	/**
+	 * 格式化文件名以保存到磁盘
+	 * @param fileName 文件名
+	 * @return 格式化后的文件名
+	 */
+	public static String formatFileName(String fileName){
+//		星号 (*)
+//		竖线 (|)
+//		反斜杠 (\)
+//		冒号 (:)
+//		双引号 (“)
+//		小于号 (<)
+//		大于号 (>)
+//		问号 (?)
+//		正斜杠 (/)
 		String[] replaceArray = new String[]{"\\","/",":","*","?","\"","<",">","|"};
-		System.out.println(path);
-		String replace = path.substring(path.lastIndexOf("/") + 1);
+
+
+		String temp = fileName.substring(fileName.lastIndexOf(File.pathSeparatorChar) + 1);
+
 		for(int i = 0; i < replaceArray.length; i ++){
-			replace = replace.replace(replaceArray[i], "_");
-			System.out.println(replace);
+			fileName = fileName.replace(replaceArray[i], "_");
 		}
-		String result = path.subSequence(0,(int)path.lastIndexOf("/") + 1) + replace;
-		System.out.println(result);
-		return result;
+
+
+		return fileName;
 	}
-	
+
+	/**
+	 * 格式化路径
+	 */
+	public String formatPath(String path){
+
+
+			Map<String,String> replaceMap = new HashMap<>();
+			replaceMap.put("’","'");
+			replaceMap.put("“","\"");
+			replaceMap.put("\\\\","\\");
+			replaceMap.put("百分号","%");
+			replaceMap.put("？","?");
+			replaceMap.put("下划线","_");
+			Iterator iterator = replaceMap.keySet().iterator();
+			String key = null;
+
+			while(iterator.hasNext()){
+				key = (String)iterator.next();
+				path = path.replace(key, replaceMap.get(key));
+			}
+
+			return path;
+		}
+
 	@Override
 	public void run() {
+
 		httpClient = (CloseableHttpClient) context.getHttpClient();
-		HttpGet httpget = new HttpGet(path);
+
+		HttpGet httpget = new HttpGet(formatPath(path));
+
 		CloseableHttpResponse response = null;
 		try {
 			response = httpClient.execute(httpget);
 			int code = response.getStatusLine().getStatusCode();
                         switch(code){
-                        //TODO 文件名的问题
+                        //TODO 文件路径要修改的问题
                             case HTTP_OK:
                                 HttpEntity httpEntity = response.getEntity();
                                 InputStream inputStream = httpEntity.getContent();
                                 String filePath = Constant.applicationPath
                                         + "html" + File.separator
-                                        + path.substring(path.lastIndexOf("/")+1) + ".html";
+                                        + formatFileName(path.substring(path.lastIndexOf("/") + 1)) + ".html";
+
                                 FileOutputStream fileOutputStream = null;
                                 try{
                                     fileOutputStream = new FileOutputStream(filePath);
@@ -85,22 +129,27 @@ public class SaveThread extends ThreadInfo {
                                 if(fileOutputStream != null){
                                     fileOutputStream.close();
                                 }
-                                
-                                printThreadInfo("");
-                                context.getResolveList().addThread(new ResolveThread(hashCode,path,++threadType,context));
-                                this.updateInfoStr();
-                                printThreadInfo("");
-                                break;
+
+								updateThreadCount();
+								printThreadInfo("运行结束");
+                                new ResolveThread(hashCode, filePath, ++threadType,this.getContentType(),context);
+
+								break;
                             case HTTP_BLOCK:
                             	printThreadInfo("网络连接失败");
+
+								this.updateThreadRunFailInfo();
                                 break;
                         }
 			
 		} catch (Exception e) {
+
+			this.updateThreadRunFailInfo();
+
 			printThreadInfoError("保存失败",e);
 			e.printStackTrace();
 		} 
 		
-		ThreadList.decreseRunningCount();
+
 	}
 }

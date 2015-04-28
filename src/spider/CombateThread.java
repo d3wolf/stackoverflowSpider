@@ -8,8 +8,8 @@ public class CombateThread extends ThreadInfo{
      * @param threadType 线程类型
      * @param context 上下文
      */
-	public CombateThread(long hashCode,String path,int threadType,Context context){
-		super(hashCode, path, threadType, context);
+	public CombateThread(long hashCode,String path,int threadType,int contentType,Context context){
+		super(hashCode, path, threadType,contentType, context);
 	}
 
 	@Override
