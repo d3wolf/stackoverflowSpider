@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 
 public class SettingView extends JFrame {
 
@@ -81,7 +82,7 @@ public class SettingView extends JFrame {
 	 */
 	public SettingView() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 757, 419);
+		setBounds(100, 100, 893, 419);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -198,7 +199,8 @@ public class SettingView extends JFrame {
 		JLabel label_6 = new JLabel("\u8F93\u51FA\u6587\u4EF6\u8DEF\u5F84");
 		label_6.setBounds(10, 10, 77, 15);
 		panel_6.add(label_6);
-		
+
+
 		outputFilePath_TextField = new JTextField();
 		outputFilePath_TextField.setBounds(97, 7, 270, 21);
 		panel_6.add(outputFilePath_TextField);
@@ -208,11 +210,11 @@ public class SettingView extends JFrame {
 		chooseOutputFilePath_Button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				//TODO chooseOutputFilePath_Button的事件响应
-				FileFilter fileFilter = new FileFilter(){
+				FileFilter fileFilter = new FileFilter() {
 
 					@Override
 					public boolean accept(File f) {
-						if(f.isDirectory())
+						if (f.isDirectory())
 							return true;
 						else
 							return false;
@@ -222,17 +224,17 @@ public class SettingView extends JFrame {
 					public String getDescription() {
 						return "文件路径";
 					}
-					
+
 				};
-				 JFileChooser fileChooser = new JFileChooser();
-				 fileChooser.setFileFilter(fileFilter);
-				 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				 fileChooser.setVisible(true);
-				 
-				 int i = fileChooser.showOpenDialog(getContentPane());
-				 if(i == fileChooser.APPROVE_OPTION){
-					 outputFilePath_TextField.setText(fileChooser.getSelectedFile().getAbsolutePath());
-				 }
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setFileFilter(fileFilter);
+				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				fileChooser.setVisible(true);
+
+				int i = fileChooser.showOpenDialog(getContentPane());
+				if (i == fileChooser.APPROVE_OPTION) {
+					outputFilePath_TextField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+				}
 			}
 		});
 		chooseOutputFilePath_Button.setBounds(377, 6, 181, 23);
@@ -241,7 +243,7 @@ public class SettingView extends JFrame {
 		
 		JPanel panel_7 = new JPanel();
 		panel_7.setLayout(null);
-		panel_7.setBounds(10, 275, 721, 65);
+		panel_7.setBounds(10, 275, 893, 65);
 		contentPane.add(panel_7);
 		
 		
@@ -256,6 +258,14 @@ public class SettingView extends JFrame {
 		JButton gitHub_Button = new JButton("作者GitHub");
 		gitHub_Button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				java.net.URI uri = null;
+				try {
+					uri = new java.net.URI("https://github.com/Bruce-Du/");
+					java.awt.Desktop.getDesktop().browse(uri);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
 			}
 		});
 		gitHub_Button.setBounds(374, 10, 172, 45);
@@ -264,16 +274,47 @@ public class SettingView extends JFrame {
 		JButton blog_Button = new JButton("作者博客");
 		blog_Button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				java.net.URI uri = null;
+				try {
+					uri = new java.net.URI("http://blog.csdn.net/qq_25715511");
+					java.awt.Desktop.getDesktop().browse(uri);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		blog_Button.setBounds(192, 10, 172, 45);
 		panel_7.add(blog_Button);
 		
 		JButton advertise_Button = new JButton("反馈建议");
-		advertise_Button.setBounds(549, 10, 172, 45);
+		advertise_Button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				java.net.URI uri = null;
+				try {
+					uri = new java.net.URI("http://blog.csdn.net/qq_25715511/article/details/45334429");
+					java.awt.Desktop.getDesktop().browse(uri);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+				advertise_Button.setBounds(549, 10, 172, 45);
 		panel_7.add(advertise_Button);
-		
-		
+
+
+		JButton databaseConfig_Button = new JButton("配置数据库");
+		databaseConfig_Button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				//TODO 数据库
+				new DataBaseConfig(context).setVisible(true);
+			}
+		});
+		databaseConfig_Button.setBounds(721, 10, 172, 45);
+		panel_7.add(databaseConfig_Button);
+
+
+		databaseConfig_Button.setBounds(721, 10, 172, 45);
+		panel_7.add(databaseConfig_Button);
 		initView();
 	}
 	class StopRunningListener implements ActionListener{
@@ -283,7 +324,7 @@ public class SettingView extends JFrame {
 			
 			start_Button.removeActionListener(this);
 			
-			start_Button.setText("继续运行");
+
 			start_Button.addActionListener(new StartRunningListener());
 		}
 		
@@ -315,6 +356,11 @@ public class SettingView extends JFrame {
 				}else{
 					context.setMaxThreadNumber((Integer) threadcount_spinner.getValue());
 				}
+
+				if(!"true".equals(context.getDataBasePass())){
+					new ErrorDialog("数据库连接错误，请确认“创建.sql”成功导入数据库中与用户名、密码配置正确").setVisible(true);
+					return;
+				}
 				//TODO Tag处理
 				saveConfig();
 				initRunningConfig();
@@ -340,72 +386,15 @@ public class SettingView extends JFrame {
 		context.setMaxThreadNumber((Integer)threadcount_spinner.getValue());
 	}
 	private void saveConfig() {
-//		  DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
-//	        Element theBook=null, theElem=null, root=null;
-//	        try {
-//	            factory.setIgnoringElementContentWhitespace(true);
-//	            
-//	            DocumentBuilder db=factory.newDocumentBuilder();
-//	            Document xmldoc=db.parse(new File("MyXml.xml"));
-//	            root=xmldoc.getDocumentElement();
-//	            
-//	            //--- 新建一本书开始 ----
-//	            theBook=xmldoc.createElement("book");
-//	            theElem=xmldoc.createElement("name");
-//	            theElem.setTextContent("新书");
-//	            theBook.appendChild(theElem);
-//	            
-//	            theElem=xmldoc.createElement("price");
-//	            theElem.setTextContent("20");
-//	            theBook.appendChild(theElem);
-//	            theElem=xmldoc.createElement("memo");
-//	            theElem.setTextContent("新书的更好看。");
-//	            theBook.appendChild(theElem);
-//	            root.appendChild(theBook);
-//	            System.out.println("--- 新建一本书开始 ----");
-//	            output(xmldoc);
-//	            //--- 新建一本书完成 ----
-//	            //--- 下面对《哈里波特》做一些修改。 ----
-//	            //--- 查询找《哈里波特》----
-//	            theBook=(Element) selectSingleNode("/books/book[name='哈里波特']", root);
-//	            System.out.println("--- 查询找《哈里波特》 ----");
-//	            output(theBook);
-//	            //--- 此时修改这本书的价格 -----
-//	            theBook.getElementsByTagName("price").item(0).setTextContent("15");//getElementsByTagName 返回的是NodeList，所以要跟上item(0)。另外，getElementsByTagName("price")相当于xpath 的".//price"。
-//	            System.out.println("--- 此时修改这本书的价格 ----");
-//	            output(theBook);
-//	            //--- 另外还想加一个属性id，值为B01 ----
-//	            theBook.setAttribute("id", "B01");
-//	            System.out.println("--- 另外还想加一个属性id，值为B01 ----");
-//	            output(theBook);
-//	            //--- 对《哈里波特》修改完成。 ----
-//	            //--- 要用id属性删除《三国演义》这本书 ----
-//	            theBook=(Element) selectSingleNode("/books/book[@id='B02']", root);
-//	            System.out.println("--- 要用id属性删除《三国演义》这本书 ----");
-//	            output(theBook);
-//	            theBook.getParentNode().removeChild(theBook);
-//	            System.out.println("--- 删除后的ＸＭＬ ----");
-//	            output(xmldoc);
-//	            //--- 再将所有价格低于10的书删除 ----
-//	            NodeList someBooks=selectNodes("/books/book[price<10]", root);
-//	            System.out.println("--- 再将所有价格低于10的书删除 ---");
-//	            System.out.println("--- 符合条件的书有　"+someBooks.getLength()+"本。 ---");
-//	            for(int i=0;i<someBooks.getLength();i++) {
-//	                someBooks.item(i).getParentNode().removeChild(someBooks.item(i));
-//	            }
-//	            output(xmldoc);
-//	            saveXml("Test1_Edited.xml", xmldoc);
-//	        } catch (ParserConfigurationException e) {
-//	            e.printStackTrace();
-//	        } catch (SAXException e) {
-//	            e.printStackTrace();
-//	        } catch (IOException e) {
-//	            e.printStackTrace();
-//	        }
-		
-		//TODO 保存配置
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		Element root=null, keyword=null, type=null,threadNum=null,filepath=null;  
+		Element root=null,
+				keyword=null,
+				type=null,
+				threadNum=null,
+				filepath=null,
+				db_usernam=null,
+				db_passwd=null,
+				db_pass = null;
 		factory.setIgnoringElementContentWhitespace(true);
           
           DocumentBuilder db;
@@ -434,12 +423,36 @@ public class SettingView extends JFrame {
 			
 			filepath = xmldoc.createElement("filepath");
 			filepath.setTextContent(outputFilePath_TextField.getText());
-			
+			System.out.println("databaseUserName \t" + context.getDataBaseUsername() + "\n" + "databasePassWord \t" + context.getDataBasePasswd() + "\ndatabasePass\t" + context.getDataBasePass());
+
+			if(context.getDataBasePass().equals("true")) {
+				db_usernam = xmldoc.createElement("databaseUserName");
+				db_usernam.setTextContent(context.getDataBaseUsername());
+				db_passwd = xmldoc.createElement("databasePassWord");
+				db_passwd.setTextContent(context.getDataBasePasswd());
+
+				root.appendChild(db_usernam);
+				root.appendChild(db_passwd);
+
+				db_pass = xmldoc.createElement("databasePassOrNot");
+				db_pass.setTextContent(context.getDataBasePass());
+
+				root.appendChild(db_pass);
+			}else{
+				db_pass = xmldoc.createElement("databasePassOrNot");
+				db_pass.setTextContent(context.getDataBasePass());
+
+				root.appendChild(db_pass);
+			}
+
+
 			root.appendChild(keyword);
 			root.appendChild(type);
 			root.appendChild(threadNum);
 			root.appendChild(filepath);
-			
+
+
+
 			xmldoc.appendChild(root);
 			
 			 TransformerFactory transFactory=TransformerFactory.newInstance();
@@ -490,9 +503,13 @@ public class SettingView extends JFrame {
 	                    	threadcount_spinner.setValue(Integer.parseInt(node.getTextContent()));
 	                    }else if(node.getNodeName() == "filepath"){
 	                    	outputFilePath_TextField.setText(node.getTextContent());
-	                    }else{
-	                    	
-	                    }
+	                    }else if(node.getNodeName() == "databaseUserName"){
+	                    	context.setDataBaseUsername(node.getTextContent());
+						}else if(node.getNodeName() == "databasePassWord"){
+							context.setDataBasePasswd(node.getTextContent());
+						}else if(node.getNodeName() == "databasePassOrNot"){
+							context.setDataBasePass(node.getTextContent());
+						}
 	            }
 	           
 	        } catch (FileNotFoundException e) {
@@ -504,9 +521,6 @@ public class SettingView extends JFrame {
 	        } catch (IOException e) {
 	            System.out.println(e.getMessage());
 	        }
-	   
-		
-		
 	}
 }
 	

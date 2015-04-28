@@ -11,6 +11,9 @@ import org.apache.http.impl.client.HttpClients;
 public class Context extends Thread {
 
 	private String tag = null;
+	private String dataBaseUsername;
+	private String dataBasePasswd;
+	private String dataBasePass = "false";
 
 	public void setTag(String string) {
 		tag = string;
@@ -81,17 +84,22 @@ public class Context extends Thread {
 	 * 初始化数据库连接池
 	 */
 	private void initDataBaseConnectionPool() {
+
 		ds = new BasicDataSource();
 		ds.setDriverClassName(Constant.dataBaseDriverClassName);
 		ds.setUrl(Constant.dataBaseUrl);
-		ds.setUsername(Constant.dataBaseUserName);
-		ds.setPassword(Constant.dataBasePassWord);
+		ds.setUsername(dataBaseUsername);
+		ds.setPassword(dataBasePasswd);
 		ds.setInitialSize(10);
 		ds.setMaxIdle(dataBaseMaxConnectionSize);
 		ds.setMinIdle(20);
+
 	}
 
 	public synchronized BasicDataSource getDataBase() {
+		if(ds == null){
+			initDataBaseConnectionPool();
+		}
 		return ds;
 	}
 
@@ -186,7 +194,8 @@ public class Context extends Thread {
 
 	public Context() {
 		httpClient = HttpClients.createDefault();
-		initDataBaseConnectionPool();
+
+
 	}
 
 	@Override
@@ -208,13 +217,9 @@ public class Context extends Thread {
 					}else{
 						listEmptyFlag |= 2;
 					}
-					if (null != (threadInfo = combateList.getThread())) {
-						threadPool.execute(threadInfo);
-					}else{
-						listEmptyFlag |= 4;
-					}
 
-					if(listEmptyFlag == 7){
+
+					if(listEmptyFlag == 3){
 						try {
 							Thread.sleep(1 * 1000);
 						} catch (InterruptedException e) {
@@ -231,4 +236,26 @@ public class Context extends Thread {
 						}
 					}
 				}
-			}
+	public String getDataBaseUsername(){
+		return dataBaseUsername;
+	}
+	public void setDataBaseUsername(String dataBaseUsername) {
+		this.dataBaseUsername = dataBaseUsername;
+	}
+
+	public String getDataBasePasswd(){
+		return dataBasePasswd;
+	}
+
+	public void setDataBasePasswd(String dataBasePasswd){
+		this.dataBasePasswd = dataBasePasswd;
+	}
+
+	public String getDataBasePass() {
+		return dataBasePass;
+	}
+
+	public void setDataBasePass(String dataBasePass){
+		this.dataBasePass = dataBasePass;
+	}
+}
